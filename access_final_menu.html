@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <title>Finalized Menu</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Menu Items</h1>
+        <div id="contentArea">
+            <!-- Content will be loaded based on access value -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            axios.get('/check_access1')
+                .then(function(response) {
+                    const container = document.getElementById('contentArea');
+                    if (response.data.access === 1) {
+                        axios.get('/final_menu')
+                            .then(function(res) {
+                                const items = res.data.finalMenu;
+                                if (items.length > 0) {
+                                    const ul = document.createElement('ul');
+                                    items.forEach(item => {
+                                        const li = document.createElement('li');
+                                        li.textContent = item.item_name;
+                                        ul.appendChild(li);
+                                    });
+                                    container.appendChild(ul);
+                                } else {
+                                    container.textContent = 'No items in the final menu.';
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error('Error fetching final menu:', error);
+                                container.textContent = 'Error loading menu data.';
+                            });
+                    } else {
+                        container.textContent = 'The menu is not finalized yet.';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error fetching access data:', error);
+                    container.textContent = 'Error determining access.';
+                });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adjust Budget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e7f3ff;
+            color: #333;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin: 5px 0;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 6px 12px;
+        }
+        .delete-btn:hover {
+            background-color: #e60000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Adjust Budget</h1>
+        <h2>Delete Expense</h2>
+        <table id="expensesTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <h2>Update Budget</h2>
+        <table id="budgetTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Total Amount</th>
+                    <th>Left Amount</th>
+                    <th>Increase/Decrease</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <h2>Add New Budget Item</h2>
+        <form id="newBudgetForm">
+            <label for="newBudgetName">Budget Name:</label>
+            <input type="text" id="newBudgetName" required>
+            
+            <label for="newBudgetAmount">Total Amount:</label>
+            <input type="number" id="newBudgetAmount" required>
+            
+            <button type="button" onclick="addNewBudget()">Add Budget</button>
+        </form>
+    </div>
+
+    <script>
+        function fetchExpensesData() {
+            fetch('/expenses_data')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#expensesTable tbody');
+                    tableBody.innerHTML = data.expenses.map(expense => `
+                        <tr>
+                            <td>${expense.name}</td>
+                            <td>${expense.type}</td>
+                            <td>${expense.amount}</td>
+                            <td><button class="delete-btn" onclick="deleteExpense('${expense.name}', '${expense.type}', ${expense.amount})">Delete</button></td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(err => console.error('Error fetching expenses data:', err));
+        }
+
+        function fetchBudgetData() {
+            fetch('/budget_data')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#budgetTable tbody');
+                    tableBody.innerHTML = data.budgets.map(budget => `
+                        <tr>
+                            <td>${budget.name}</td>
+                            <td>${budget.total_amount}</td>
+                            <td>${budget.left_amount}</td>
+                            <td>
+                                <select id="increase_decrease_${budget.name}">
+                                    <option value="increase">Increase</option>
+                                    <option value="decrease">Decrease</option>
+                                </select>
+                            </td>
+                            <td><input type="number" id="adjust_${budget.name}" value="0"></td>
+                            <td><button onclick="adjustBudget('${budget.name}')">Save</button></td>
+                            <td><button class="delete-btn" onclick="deleteBudget('${budget.name}')">Delete</button></td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(err => console.error('Error fetching budget data:', err));
+        }
+
+        function deleteExpense(name, type, amount) {
+            fetch(`/delete_expense?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}&amount=${amount}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchExpensesData();
+                        fetchBudgetData();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error deleting expense:', err));
+        }
+
+        function adjustBudget(name) {
+            const adjustType = document.getElementById(`increase_decrease_${name}`).value;
+            const amount = parseInt(document.getElementById(`adjust_${name}`).value, 10);
+            const data = { name, adjustType, amount };
+
+            fetch('/adjust_budget', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchBudgetData();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error adjusting budget:', err));
+        }
+
+        function deleteBudget(name) {
+            fetch(`/delete_budget?name=${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchBudgetData();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error deleting budget:', err));
+        }
+
+        function addNewBudget() {
+            const name = document.getElementById('newBudgetName').value;
+            const totalAmount = parseInt(document.getElementById('newBudgetAmount').value, 10);
+            const data = { name, totalAmount };
+
+            fetch('/add_budget', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchBudgetData();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error adding new budget:', err));
+        }
+
+        fetchExpensesData();
+        fetchBudgetData();
+    </script>
+</body>
+</html>

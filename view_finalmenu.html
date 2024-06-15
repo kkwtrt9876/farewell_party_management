@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Finalized Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e7f3ff;
+            color: #333;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        .access-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .message {
+            text-align: center;
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Finalized Menu</h1>
+        <table id="finalMenuTable">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="access-buttons">
+            <button onclick="setAccess(1)">Open Access</button>
+            <button onclick="setAccess(0)">Close Access</button>
+        </div>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        function fetchFinalMenu() {
+            fetch('/final_menu')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#finalMenuTable tbody');
+                    if (data.finalMenu.length > 0) {
+                        tableBody.innerHTML = data.finalMenu.map(item => `
+                            <tr>
+                                <td>${item.item_name}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tableBody.innerHTML = `<tr><td>No items in the final menu.</td></tr>`;
+                    }
+                })
+                .catch(err => console.error('Error fetching final menu:', err));
+        }
+
+        function setAccess(accessValue) {
+            fetch('/set_access1', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ access: accessValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+            })
+            .catch(err => {
+                console.error('Error setting access:', err);
+                document.getElementById('message').textContent = 'Failed to set access.';
+                document.getElementById('message').style.color = 'red';
+            });
+        }
+
+        fetchFinalMenu();
+    </script>
+</body>
+</html>

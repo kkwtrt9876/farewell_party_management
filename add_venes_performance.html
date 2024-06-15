@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Add Performance Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Current Performances</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Venue</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Rehearsal (Hours)</th>
+                </tr>
+            </thead>
+            <tbody id="performanceTable">
+                <!-- Current performances will be listed here -->
+            </tbody>
+        </table>
+        <h2>Add Performance Details</h2>
+        <form id="performanceForm">
+            <div class="mb-3">
+                <label for="name" class="form-label">Performance Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="time" class="form-label">Performance Time</label>
+                <input type="datetime-local" class="form-control" id="time" name="time" required>
+            </div>
+            <div class="mb-3">
+                <label for="venue" class="form-label">Venue</label>
+                <input type="text" class="form-control" id="venue" name="venue" required>
+            </div>
+            <div class="mb-3">
+                <label for="rehearsal" class="form-label">Rehearsal Time (in hours)</label>
+                <input type="number" class="form-control" id="rehearsal" name="rehearsal" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('performanceForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = {
+                name: this.name.value,
+                time: this.time.value,
+                venue: this.venue.value,
+                rehearsal: this.rehearsal.value
+            };
+            axios.post('/add_performance_details', formData)
+                .then(response => {
+                    alert('Performance details added successfully.');
+                    location.reload(); // Refresh the page to update the list of performances
+                })
+                .catch(error => {
+                    console.error('Error adding performance details:', error);
+                    alert('Failed to add performance details.');
+                });
+        });
+
+        function fetchPerformances() {
+            axios.get('/get_performance_details')
+                .then(response => {
+                    const performances = response.data.performances;
+                    const table = document.getElementById('performanceTable');
+                    table.innerHTML = '';
+                    performances.forEach(performance => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${performance.name}</td>
+                            <td>${performance.venue || 'Not specified'}</td>
+                            <td>${new Date(performance.time).toLocaleString()}</td>
+                            <td>${performance.duration || 'Not specified'}</td>
+                            <td>${performance.rehearsal || '0'}</td>
+                        `;
+                        table.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching performances:', error);
+                });
+        }
+
+        // Load performances on page load
+        window.onload = fetchPerformances;
+    </script>
+</body>
+</html>

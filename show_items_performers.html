@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Selected Performers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background-color: #e7f3ff;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selected Performers</h1>
+        <ul id="performerItems"></ul>
+    </div>
+    <script>
+        async function fetchPerformerItems() {
+            try {
+                const response = await fetch('/performer_items');
+                const data = await response.json();
+                const list = document.getElementById('performerItems');
+                list.innerHTML = data.items.map(item => `<li>${item}</li>`).join('');
+            } catch (err) {
+                console.error('Error fetching performer items:', err);
+            }
+        }
+
+        fetchPerformerItems();
+
+        
+    </script>
+</body>
+</html>
+
+

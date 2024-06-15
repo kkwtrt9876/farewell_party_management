@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Finalize Menu Access Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Finalize Menu</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Venue</th>
+                    <th>Rehearsal</th>
+                </tr>
+            </thead>
+            <tbody id="menuTable">
+                <!-- Finalize Menu will be populated here -->
+            </tbody>
+        </table>
+        <div class="access-control mt-4">
+            <h4>Give Access or Not</h4>
+            <button onclick="setAccess(1)" class="btn btn-success">Open Access</button>
+            <button onclick="setAccess(0)" class="btn btn-danger">Close Access</button>
+            <p id="accessMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        function fetchMenu() {
+            axios.get('/get_finalize_menu')
+                .then(response => {
+                    const items = response.data.menu;
+                    const table = document.getElementById('menuTable');
+                    table.innerHTML = '';
+                    items.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${item.name}</td><td>${item.time}</td><td>${item.duration}</td><td>${item.venue}</td><td>${item.rehersal}</td>`;
+                        table.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching menu:', error));
+        }
+
+        function setAccess(accessValue) {
+            axios.post('/set_access', { access: accessValue })
+                .then(response => {
+                    const message = document.getElementById('accessMessage');
+                    message.textContent = accessValue ? 'Access given.' : 'Access revoked.';
+                })
+                .catch(error => {
+                    console.error('Error setting access:', error);
+                    alert('Failed to set access.');
+                });
+        }
+
+        // Load menu on page load
+        window.onload = fetchMenu;
+    </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Finalize Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+        }
+        .left-panel {
+            width: 70%;
+            margin-right: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .right-panel {
+            width: 30%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e7f3ff;
+            color: #333;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        .btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 6px 12px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #ff4c4c;
+        }
+        .delete-btn:hover {
+            background-color: #e60000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h1>Finalize Menu</h1>
+            <table id="menuItemsTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Votes</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="right-panel">
+            <h2>Budget Details</h2>
+            <table id="budgetDetailsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Total Amount</th>
+                        <th>Left Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function fetchMenuItems() {
+            fetch('/menu_items1')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#menuItemsTable tbody');
+                    tableBody.innerHTML = data.items.map(item => `
+                        <tr>
+                            <td>${item.item_name}</td>
+                            <td>${item.price}</td>
+                            <td>${item.total_votes}</td>
+                            <td>
+                                <button class="btn" onclick="addItem('${item.item_name}', ${item.price})">Add</button>
+                                <button class="btn delete-btn" onclick="deleteItem('${item.item_name}', ${item.price})">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(err => console.error('Error fetching menu items:', err));
+        }
+
+        function fetchBudgetDetails() {
+            fetch('/budget_details')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#budgetDetailsTable tbody');
+                    tableBody.innerHTML = data.budgets.map(budget => `
+                        <tr>
+                            <td>${budget.name}</td>
+                            <td>${budget.total_amount}</td>
+                            <td>${budget.left_amount}</td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(err => console.error('Error fetching budget details:', err));
+        }
+
+        function addItem(item_name, price) {
+            const data = { item_name, price };
+            fetch('/add_menu_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchMenuItems();
+                        fetchBudgetDetails();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error adding item:', err));
+        }
+
+        function deleteItem(item_name, price) {
+            fetch(`/delete_menu_item?item_name=${encodeURIComponent(item_name)}&price=${price}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        fetchMenuItems();
+                        fetchBudgetDetails();
+                    } else {
+                        alert(result.message);
+                    }
+                })
+                .catch(err => console.error('Error deleting item:', err));
+        }
+
+        fetchMenuItems();
+        fetchBudgetDetails();
+    </script>
+</body>
+</html>

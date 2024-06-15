@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Items</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Menu Selection</h1>
+        <table id="menuTable">
+            <thead>
+                <tr>
+                    <th>Item 1</th>
+                    <th>Item 2</th>
+                    <th>Item 3</th>
+                    <th>Item 4</th>
+                    <th>Item 5</th>
+                    <th>Item 6</th>
+                    <th>Item 7</th>
+                    <th>Item 8</th>
+                    <th>Item 9</th>
+                    <th>Item 10</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Menu items will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/menu_items')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('menuTable').querySelector('tbody');
+                    if (data.items.length > 0) {
+                        const row = document.createElement('tr');
+                        data.items.forEach(item => {
+                            const cell = document.createElement('td');
+                            cell.textContent = item;
+                            row.appendChild(cell);
+                        });
+                        tableBody.appendChild(row);
+                    } else {
+                        const row = document.createElement('tr');
+                        const cell = document.createElement('td');
+                        cell.setAttribute('colspan', '10');
+                        cell.textContent = 'No items selected.';
+                        cell.style.textAlign = 'center';
+                        row.appendChild(cell);
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => console.error('Error fetching menu items:', error));
+        });
+    </script>
+</body>
+</html>

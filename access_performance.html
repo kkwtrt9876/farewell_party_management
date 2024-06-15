@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <title>Finalized Performance Menu</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Performance Menu</h1>
+        <div id="contentArea">
+            <!-- Content will be loaded based on access value -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            axios.get('/check_access')
+                .then(function(response) {
+                    const container = document.getElementById('contentArea');
+                    if (response.data.access === 1) {
+                        axios.get('/get_finalize_menu')
+                            .then(function(res) {
+                                const performances = res.data.menu;
+                                if (performances.length > 0) {
+                                    const table = document.createElement('table');
+                                    table.className = 'table table-striped';
+                                    const thead = table.createTHead();
+                                    const row = thead.insertRow();
+                                    const headers = ['Name', 'Time', 'Duration', 'Venue', 'Rehearsal'];
+                                    headers.forEach(text => {
+                                        const th = document.createElement('th');
+                                        th.textContent = text;
+                                        row.appendChild(th);
+                                    });
+
+                                    const tbody = table.createTBody();
+                                    performances.forEach(perf => {
+                                        const tr = tbody.insertRow();
+                                        headers.forEach(field => {
+                                            const td = tr.insertCell();
+                                            td.textContent = perf[field.toLowerCase()];
+                                        });
+                                    });
+                                    container.appendChild(table);
+                                } else {
+                                    container.textContent = 'No performances are finalized yet.';
+                                }
+                            });
+                    } else {
+                        container.textContent = 'The menu is not finalized yet.';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error fetching access data:', error);
+                    document.getElementById('contentArea').textContent = 'Error loading data.';
+                });
+        });
+    </script>
+</body>
+</html>

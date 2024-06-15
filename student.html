@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student and Family Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        ul, ol {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background-color: #e7f3ff;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Information</h1>
+        <ul id="studentInfo"></ul>
+        <h2>Family Members</h2>
+        <ol id="familyMembers"></ol>
+    </div>
+    <script>
+        async function fetchStudentInfo() {
+            try {
+                const response = await fetch('/student_info');
+                const data = await response.json();
+
+                const studentList = document.getElementById('studentInfo');
+                const familyList = document.getElementById('familyMembers');
+
+                studentList.innerHTML = `
+                    <li><strong>Name:</strong> ${data.student.name}</li>
+                    <li><strong>Address:</strong> ${data.student.address}</li>
+                    <li><strong>Contact:</strong> ${data.student.contact}</li>
+                `;
+
+                familyList.innerHTML = data.family.map(member => `
+                    <li>${member.fmembername} - Contact: ${member.fmembercontact}</li>
+                `).join('');
+            } catch (err) {
+                console.error('Error fetching student info:', err);
+            }
+        }
+
+        fetchStudentInfo();
+    </script>
+</body>
+</html>

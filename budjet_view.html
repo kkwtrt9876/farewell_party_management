@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e7f3ff;
+            color: #333;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Overview</h1>
+        <table id="budgetTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Total Amount</th>
+                    <th>Left Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        async function fetchBudgetData() {
+            try {
+                const response = await fetch('/budget_data');
+                const data = await response.json();
+                const tableBody = document.querySelector('#budgetTable tbody');
+                tableBody.innerHTML = data.budgets.map(budget => `
+                    <tr>
+                        <td>${budget.name}</td>
+                        <td>${budget.total_amount}</td>
+                        <td>${budget.left_amount}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error fetching budget data:', err);
+            }
+        }
+
+        fetchBudgetData();
+    </script>
+</body>
+</html>
